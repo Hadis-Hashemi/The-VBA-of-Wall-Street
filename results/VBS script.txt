@@ -1,0 +1,103 @@
+Sub stockmarkrt():
+    Dim tickerID As String
+    Dim opening_price As Double
+    Dim closing_price As Double
+    Dim yearly_change As Double
+    Dim percent_change As Double
+    Dim Greatest_Increased As Double
+    Dim Greatest_Decreased As Double
+    Dim Greatest_Volume As Double
+    Dim ticker_Greatest_Increased As String
+    Dim ticker_Greatest_Decreased As String
+    Dim ticker_greatest_Volume As String
+    Dim EndRow As Double
+    Dim total_stack_valume As Double
+    Dim row_tracker As Double
+    Dim Summary_Table_Row As Double
+
+    total_stack_valume = 0 'Keep track on the location of row
+    
+    Summary_Table_Row = 2   'Loop through all sheets
+    For Each ws In Worksheets
+        Greatest_Increased = 0
+        Greatest_Decreased = 0
+        Greatest_Volume = 0
+        total_stack_valume = 0
+        ws.Activate
+        row_tracker = 2
+        summary_row_change = 2
+        
+        ws.Range("J1").Value = "ticker"
+        ws.Range("K1").Value = "yearly change"
+        ws.Range("L1").Value = "percent change"
+        ws.Range("M1").Value = "total stack valume"
+        ws.Range("P2") = "Greatest Increased"
+        ws.Range("P3") = "Greatest Decreased"
+        ws.Range("P4") = "Greatest Volume"
+        ws.Range("Q1") = "Ticker"
+        ws.Range("R1") = "Range" 'finding the endrow
+        
+        EndRow = ws.Cells(Rows.Count, 1).End(xlUp).Row 'finding the endrow
+        opening_price = ws.Cells(2, 3)               ' Loop through all tickers
+        For i = 2 To EndRow
+           If (ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value) Then             ' Set the ticker name
+             tickerID = ws.Cells(i, 1).Value             ' Add to the total stack volume             'set the opening price and closing price
+             closing_price = ws.Cells(i, 6).Value
+             yearly_change = closing_price - opening_price
+             
+             If opening_price <> 0 Then
+                percent_change = (yearly_change) / (opening_price) * 100
+             Else
+                percent_change = yearly_change / 0.001
+             End If             ' Print the ticker name, yearly change and percent change in the Summary Table
+             opening_price = ws.Cells(i + 1, 3).Value
+             ws.Range("J" & Summary_Table_Row).Value = tickerID
+             ws.Range("K" & Summary_Table_Row).Value = yearly_change
+             ws.Range("L" & Summary_Table_Row).Value = percent_change
+             ws.Range("M" & Summary_Table_Row).Value = total_stack_valume
+             total_stack_valume = 0
+             If (percent_change >= 0) Then 'change the colour of yearly change either green or red
+                Range("K" & Summary_Table_Row).Interior.ColorIndex = 4
+             Else
+                Range("K" & Summary_Table_Row).Interior.ColorIndex = 3
+             End If
+                          
+             'finding the  "Greatest % increase", "Greatest % Decrease", "Greatest total volume"
+             If (((ws.Range("L" & Summary_Table_Row).Value)) > (Greatest_Increased)) Then
+                Greatest_Increased = (ws.Range("L" & Summary_Table_Row).Value)
+                ticker_Greatest_Increased = ws.Range("J" & Summary_Table_Row).Value
+             End If
+                         
+             If (((ws.Range("L" & Summary_Table_Row).Value)) < (Greatest_Decreased)) Then
+                Greatest_Decreased = (ws.Range("L" & Summary_Table_Row).Value)
+                ticker_Greatest_Decreased = ws.Range("J" & Summary_Table_Row).Value
+             End If
+                          
+             If (((ws.Range("M" & Summary_Table_Row).Value)) > (Greatest_Volume)) Then
+                Greatest_Volume = (ws.Range("M" & Summary_Table_Row).Value)
+                ticker_greatest_Volume = ws.Range("J" & Summary_Table_Row).Value
+             End If
+           
+             Summary_Table_Row = Summary_Table_Row + 1             ' If the cell immediately following a row is the same ticker name...
+             row_tracker = i + 1
+           Else
+           total_stack_valume = total_stack_valume + Cells(i, 7).Value             ' Add to the total stack volume
+         
+           End If
+        Next i
+        Summary_Table_Row = 2
+        total_stack_valume = 0
+        yearly_change = 0
+        percent_change = 0
+        ws.Range("Q2") = ticker_Greatest_Increased
+        ws.Range("Q3") = ticker_Greatest_Decreased
+        ws.Range("Q4") = ticker_greatest_Volume
+        
+        ws.Range("R2") = Greatest_Increased
+        ws.Range("R3") = Greatest_Decreased
+        ws.Range("R4") = Greatest_Volume
+        Greatest_Increased = 0
+        Greatest_Decreased = 0
+        Greatest_Volume = 0
+    Next ws
+End Sub
